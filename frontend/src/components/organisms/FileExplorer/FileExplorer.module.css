@@ -1,0 +1,51 @@
+.explorer {
+  width: 30%;
+  min-width: 350px;
+  overflow: hidden;
+}
+
+.header {
+  height: 35px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+}
+
+.folder {
+  padding-right: 10px;
+}
+
+.file {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+}
+
+.toggle {
+  padding-right: 5px;
+  padding-left: 3px;
+}
+
+.explorer {
+  padding: 10px;
+  margin: 10px;
+}
+
+.file_name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.folderSelected {
+  background-color: rgba(151, 193, 32, 0.1);
+  border-radius: 20px;
+  padding-left: 0px;
+}
+
+.fileSelected {
+  background-color: rgba(151, 193, 32, 0.1);
+  border-radius: 4px;
+  margin-left: 0px;
+}

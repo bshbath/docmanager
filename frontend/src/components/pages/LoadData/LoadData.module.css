@@ -1,0 +1,69 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+}
+
+.header {
+  padding-bottom: 40px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-items: center;
+  height: 500px;
+  flex: 1;
+}
+
+.fileIcon {
+  margin: 10px;
+}
+.loadFilesText {
+  margin: 10px;
+}
+
+.copyFilesText {
+  margin-bottom: 10px;
+}
+
+.spinnerAndLoadButton {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+}
+
+.loadMoreButtons {
+  display: flex;
+  gap: 10px;
+}
+.loadMoreButton {
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+}
+
+.loadButton {
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.projectsAndBody {
+  display: flex;
+}
+
+.projects {
+  /* background-color: red; */
+  padding: 20px;
+  padding-top: 50px;
+}

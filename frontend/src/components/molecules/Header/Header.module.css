@@ -1,0 +1,18 @@
+.header {
+  display: flex;
+  height: 40px;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 15px 20px;
+  font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  cursor: pointer;
+}
+
+.logo {
+  width: 210px;
+  height: 24px;
+  padding-left: 50px;
+  display: inline-block;
+  vertical-align: top;
+}

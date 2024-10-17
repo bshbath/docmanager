@@ -1,0 +1,73 @@
+/* src/components/atoms/Input/Input.module.css */
+.input {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.small {
+  padding: 6px 12px;
+}
+
+.medium {
+  padding: 8px 16px;
+}
+
+.large {
+  padding: 10px 20px;
+}
+
+.input:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.default {
+  font-size: 32px;
+}
+
+.searchAndHistory {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.searchHistoryDropdown {
+  margin-left: -30px;
+  opacity: 0.5;
+  filter: alpha(opacity=40);
+}
+
+.searchHistoryDropdown:hover {
+  margin-left: -30px;
+  opacity: 1;
+  filter: alpha(opacity=100);
+}
+
+.dropdownHide {
+  position: absolute;
+  height: 200px;
+  width: 360px;
+  background-color: red;
+  opacity: 0;
+}
+
+.dropdownShow {
+  position: absolute;
+  height: 200px;
+  width: 360px;
+  background-color: red;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.searchBox {
+  border-radius: 16px;
+  border: solid #d0d5dd 1px;
+  height: 40px;
+  width: 360px;
+  color: #655281;
+  font-size: 20px;
+  font-family: "montserrat";
+}

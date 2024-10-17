@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.topNav {
+  height: 50px;
+  display: flex;
+  /* background-color: red; */
+}
+
+.body {
+  /* background-color: blue; */
+}
+
+.pdfDocument {
+  overflow-y: scroll;
+  overflow-x: scroll;
+  height: calc(100vh - 270px);
+}
+
+.navigation {
+  height: 120px;
+}

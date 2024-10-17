@@ -1,0 +1,65 @@
+.container {
+  width: 160px;
+  height: 248px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.image {
+  background-color: #c7c7c7;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.fileName {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  font-size: 20px;
+  width: 160px;
+}
+
+.pageCount {
+  font-size: 14px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.textsContainer {
+  display: flex;
+  flex-direction: column;
+  height: 90px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.hoverDiv {
+  position: relative;
+}
+
+.popup {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 200px;
+  padding: 10px;
+  background-color: black;
+  color: blue;
+  text-align: center;
+  border-radius: 5px;
+  z-index: 1;
+  background-color: red;
+}
+
+.hoverDiv:hover .popup {
+  display: block;
+}

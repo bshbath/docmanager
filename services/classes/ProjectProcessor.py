@@ -121,7 +121,7 @@ class ProjectProcessor():
         
         if not project_name in self.processing_status:
             self.processing_status[project_name] = {
-                "status": "Uncompleted",
+                "status": "Processing",
                 "file_count": 0
             }
         file_count = 0
@@ -144,6 +144,10 @@ class ProjectProcessor():
                     shutil.copy2(file_path, dest_path)
                 else:
                     print(f"Skipping non-PDF file: {file_name}")
+                self.processing_status[project_name] = {
+                    "status": "Processing",
+                    "file_count": file_count
+                }
 
         print("SSTT: ", project_name, self.processing_status, self.processing_status[project_name])
         self.processing_status[project_name]["status"] = "Completed"

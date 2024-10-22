@@ -1,5 +1,6 @@
 // src/context/OperationsContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useInterval } from "./utils";
 // import {
 //   initiateSearch,
 //   initiateLoad,
@@ -8,7 +9,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 //   fetchPDFFile,
 // } from "../api/operations";
 import operations from "../api/operations";
-import { useSocket } from "./SocketContext";
 
 const {
   initiateSearch,
@@ -19,10 +19,12 @@ const {
 
   loadAllProjects,
   loadProcessedProjects,
-  loadSelectedProject,
+  setupSelectedProject,
   loadProjectStatus,
 
   loadProjectStructure,
+  loadSearchStatus,
+  fetchSearchHistoryForProject,
 } = operations;
 
 const OperationsContext = createContext();
@@ -30,34 +32,33 @@ const OperationsContext = createContext();
 export const useOperations = () => useContext(OperationsContext);
 
 export const OperationsProvider = ({ children }) => {
-  const {
-    searching,
-    searchProgress,
-    searchComplete,
-    searchResults: socketSearchResults,
-    rootFolderId,
-
-    loading,
-    loadProgress,
-    loadComplete,
-    loadedFilesCount,
-    // folderFileStructure,
-  } = useSocket();
-
   // Search states
   const [searchResults, setSearchResults] = useState([]);
-  // const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [allProjects, setAllProjects] = useState([]);
 
   // Load states
   const [loadResults, setLoadResults] = useState([]);
-  // const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [loadedPdf, setLoadedPdf] = useState(null);
   const [selectedProject, setSelectedProject] = useState({});
   const [processedProjects, setProcessedProjects] = useState([]);
   const [projectStatus, setProjectStatus] = useState({});
+  const [projectSearchStatus, setProjectSearchStatus] = useState({});
+  const [searchOccurences, setSearchOccurences] = useState({});
+  const [loadingCurrentProject, setLoadingCurrentProject] = useState(false);
+
+  const [searchHistoryForProjects, setSearchHistoryForProjects] = useState({});
+  const [rootFolderId, setRootFolderId] = useState("");
+
+  // Progress States
+  const [searching, setSearching] = useState(false);
+  const [loadingAllProjects, setLoadingAllProjects] = useState(false);
+  const [searchProgress, setSearchProgress] = useState(null);
+  const [searchComplete, setSearchComplete] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [loadComplete, setLoadComplete] = useState(false);
+  const [loadedFilesCount, setLoadedFilesCount] = useState(0);
 
   const [selectedProjectFolderStructure, setSelectedProjectFolderStructure] =
     useState({});
@@ -74,35 +75,35 @@ export const OperationsProvider = ({ children }) => {
   // Initiate search action
   const startSearch = async (searchParams) => {
     try {
-      // setSearching(true);
+      setSearching(true);
       setSearchError("");
       setSearchResults([]); // Clear previous results
       await initiateSearch(searchParams);
     } catch (err) {
       setSearchError("Failed to start search");
-      // setSearching(false);
+      setSearching(false);
     }
   };
 
-  // Initiate load action
-  const startLoad = async () => {
+  const loadSelectedProject = async (projectName) => {
+    console.log("PPPPP :; adf ", projectName);
+    setLoadingCurrentProject(true);
     try {
-      // setLoading(true);
-      setLoadError("");
-      setLoadResults([]); // Clear previous results
-      await initiateLoad();
-    } catch (err) {
-      setLoadError("Failed to start load");
-      // setLoading(false);
+      await setupSelectedProject(projectName);
+    } catch (error) {
+      setLoadError("Failed to load project ", projectName, error);
     }
   };
 
   const loadProjects = async () => {
     try {
+      setLoadingAllProjects(true);
       let allProjects = await loadAllProjects();
-      console.log("ALLL PROJCADFAD ", allProjects);
+      setLoadingAllProjects(false);
+      console.log("Alll : ", allProjects);
       setAllProjects(allProjects);
     } catch (error) {
+      setLoadingAllProjects(false);
       setLoadError("Failed to load all projects");
     }
   };
@@ -153,14 +154,6 @@ export const OperationsProvider = ({ children }) => {
     const getProjectstatus = async (projectName) => {
       try {
         let status = await loadProjectStatus(projectName);
-        setProjectsFolderFileStructure((prevProjects) => {
-          return {
-            ...prevProjects,
-            [projectName]: status.folder_file_structure,
-          };
-        });
-        console.log("STATAFADSFASDFADSFasdf  ", status);
-        setSelectedProjectFolderFilesStructure(status.folder_file_structure);
         setProjectStatus((prevProjects) => {
           return {
             ...prevProjects,
@@ -172,15 +165,107 @@ export const OperationsProvider = ({ children }) => {
       }
     };
     getProjectstatus(selectedProject.name);
-    if (selectedProject.loaded) {
-      const folderStructure = projectsFolderStructure[selectedProject.name];
-      if (folderStructure) {
-        setSelectedProjectFolderStructure(folderStructure);
-      } else {
-        loadProjectFolderStructure();
-      }
-    }
   }, [selectedProject]);
+
+  const getProjectLoadstatus = async (projectName) => {
+    let status = "";
+    try {
+      let loadStatus = await loadProjectStatus(projectName);
+      status = loadStatus.status;
+      if (status == "Completed") {
+        let updatedProjects = allProjects.map((project) => {
+          if (project.name == projectName) {
+            return {
+              ...project,
+              loaded: true,
+            };
+          } else {
+            return project;
+          }
+        });
+        setAllProjects(updatedProjects);
+        setSelectedProject({
+          ...selectedProject,
+          loaded: true,
+        });
+      }
+      if (
+        status == "Completed" ||
+        status == "Not Found" ||
+        status !== "Processing"
+      ) {
+        setLoadingCurrentProject(false);
+      }
+    } catch (error) {
+      setLoadError("Failed to load all projects");
+      setLoadingCurrentProject(false);
+    }
+    return status;
+  };
+
+  const getSearchStatus = async ({ projectName, searchTerm }) => {
+    let status = "";
+    if (!projectName || !searchTerm) {
+      return;
+    }
+
+    try {
+      let searchStatus = await loadSearchStatus({ projectName, searchTerm });
+      status = searchStatus.status;
+      if (searchStatus.status == "Completed") {
+        setSearching(false);
+        let searchFolderStructure = searchStatus.folder_structure;
+        let folderFilesStructure = searchStatus.folder_file_structure;
+        console.log(
+          "STATAFADSFASDFADSFasdf 2222 ",
+          searchStatus.folder_file_structure
+        );
+        // setSelectedProjectFolderFilesStructure(folderFilesStructure);
+        console.log("STATAFADSFASDFADSFasdf 333 ", searchFolderStructure);
+        let occurences = searchStatus.occurences;
+        setSelectedProjectFolderStructure(searchFolderStructure);
+        setSearchOccurences(occurences);
+        setSearching(false);
+      } else if (
+        searchStatus.status == "Not Found" ||
+        searchStatus.status !== "Searching"
+      ) {
+        setSearching(false);
+      }
+    } catch (error) {
+      setSearching(false);
+    }
+    return status;
+  };
+
+  const resetSearchPage = () => {
+    if (selectedProject.name) {
+      setSelectedProjectFolderStructure({
+        name: selectedProject.name,
+        id: selectedProject.name,
+        active: false,
+        toggled: false,
+        children: [],
+      });
+    } else {
+      setSelectedProjectFolderStructure({});
+    }
+  };
+
+  const getSearchHistory = async (projectName) => {
+    if (!projectName) {
+      return;
+    }
+    try {
+      let searchHistory = await fetchSearchHistoryForProject({ projectName });
+      setSearchHistoryForProjects((previousHistory) => {
+        return {
+          ...searchHistoryForProjects,
+          [projectName]: searchHistory,
+        };
+      });
+    } catch (error) {}
+  };
 
   useEffect(() => {
     loadProjects();
@@ -224,7 +309,6 @@ export const OperationsProvider = ({ children }) => {
     <OperationsContext.Provider
       value={{
         searchResults,
-        socketSearchResults,
         startSearch,
         searchProgress,
         searching,
@@ -233,11 +317,11 @@ export const OperationsProvider = ({ children }) => {
         rootFolderId,
         loadedPdf,
         fetchPDF,
+        getProjectLoadstatus,
 
         loadResults,
-        startLoad,
         loadProgress,
-        loading,
+        loading: loadingAllProjects || loadingCurrentProject,
         loadError,
         loadComplete,
         loadedFilesCount,
@@ -254,6 +338,12 @@ export const OperationsProvider = ({ children }) => {
         loadProjectFolderStructure,
 
         projectStatus,
+        searchOccurences,
+        getSearchStatus,
+        searchHistoryForProjects,
+        getSearchHistory,
+
+        resetSearchPage,
       }}
     >
       {children}

@@ -1,8 +1,9 @@
 import os
 import json
-from services.classes.searchutils import list_files_in_directory_with_keyword_search, build_folder_structure
+# from services.classes.searchutils import build_folder_structure
 from services.project_load_service import load_projects
 from services.classes.searchutils import SearchUtilsClass
+import time
 
 
 utilsClass = SearchUtilsClass()
@@ -13,23 +14,87 @@ class ProjectSearch():
         self.all_projects = load_projects(projects_folder)
         self.search_history = {}
         self.folder_file_structure_for_projects = {}
+        self.searching = {}
+        self.search_page_ocurences = {}
 
         for project_name in self.all_projects:
             project_search_history = self.load_search_history_for_project(project_name)
             self.search_history[project_name] = project_search_history
 
+    def get_search_history(self, project_name):
+        search_history = self.load_search_history_for_project(project_name)
+        return list(search_history.keys())
+
     
+    def get_search_status(self, project_name, search_term):
+        if project_name in self.searching:
+            if search_term in self.searching[project_name]:
+                if self.searching[project_name][search_term] == True:
+                    return {
+                        "status": "Searching",
+                        "folder_structure": {},
+                        "file_count": "",
+                    }
+                
+        print("HHHERERERE ", project_name in self.search_history)
+        if project_name in self.search_history:
+            project_search_history = self.search_history[project_name]
+            print("HHHERERERE  22 ", search_term, project_search_history[search_term])
+            if search_term in project_search_history:
+                print("HHHERERERE  33 ", search_term, project_search_history[search_term])
+                return {
+                    "status": "Completed",
+                    "folder_structure": project_search_history[search_term],
+                    "occurences": self.load_search_page_occurences(project_name, search_term),
+                    # "folder_file_structure": self.load_file_folder_structure(project_name, search_term)
+                }
+        print("HHHERERERE  22 why ", search_term, project_search_history[search_term])
+        return {
+            "status": "Not found",
+            "file_count": 0,
+            "folder_structure": {},
+            "occurences": {}
+        }
+        
+
     async def search_for_term_in_project(self, project_name, search_term):
+        if project_name in self.searching:
+            if search_term in self.searching[project_name]:
+                still_searching = self.searching[project_name][search_term]
+                if still_searching:
+                    return {
+                        "status": "Searching",
+                        "folder_structure": {},
+                        "file_count": ""
+                    }
+                else:
+                    return {
+                        "status": "Completed",
+                        "folder_structure": {},
+                        "file_count": ""
+                    }
+            
+            
         if not project_name in self.all_projects:
             return {
                 "status": "Not found",
-                "file_count": 0
+                "file_count": 0,
+                "folder_structure": {}
             }
+        
         if project_name in self.search_history:
             project_search_history = self.search_history[project_name]
             if search_term in project_search_history:
-                return project_search_history[search_term]
-
+                return {
+                    "status": "Completed",
+                    "folder_structure": project_search_history[search_term]
+                }
+            
+        if project_name in self.searching:
+            self.searching[project_name][search_term] = True
+        else:
+            self.searching[project_name] = {}
+            self.searching[project_name][search_term] = True
 
         projects_directory = self.projects_folder
         processed_files_folder = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, "ALL-PDFS")
@@ -44,12 +109,14 @@ class ProjectSearch():
         self.save_folder_file_structure(project_name, search_term, folder_file_structure)
         self.save_search_page_occurences(project_name, search_term, search_file_occurences)
 
-        return {
-            "status": "Searching..."
-        }
-        # print("FFF: ", project_folder_structure)
-        # print("GGG: ", folder_file_structure)
-        # print("KKK: ", keyword_occurences)
+        print("FFF: ", project_folder_structure)
+        print("GGG: ", folder_file_structure)
+        print("KKK: ", search_file_occurences)
+
+        self.searching[project_name][search_term] = False
+        # return {
+        #     "status": "Searching..."
+        # }
 
     def save_search_history(self, project_name, search_term, search_history):
         projects_directory = self.projects_folder
@@ -68,6 +135,7 @@ class ProjectSearch():
         
         with open(search_history_file, 'w') as f:
             json.dump(previous_history, f, indent=2)
+        self.search_history[project_name] = previous_history
 
     def load_search_history_for_project(self, project_name):
         projects_directory = self.projects_folder
@@ -174,7 +242,7 @@ class ProjectSearch():
         
 
     def create_folder_structure_for_clientside_explorer(self, folder):
-        folder_structure = build_folder_structure(folder)
+        folder_structure = utilsClass.build_folder_structure(folder)
         return folder_structure
 
 

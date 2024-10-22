@@ -14,7 +14,7 @@ const Input = ({
   disabled = false,
   variant = "default",
   hasDropdown = true,
-  dropdownItems = [],
+  dropdownItems = ["John Doe", "Jane Doe"],
   dropdownItemSelected,
   dismissDrowdown,
   toggleDropdown,
@@ -34,7 +34,17 @@ const Input = ({
 
         <div
           className={showDropdown ? styles.dropdownShow : styles.dropdownHide}
-        ></div>
+        >
+          {showDropdown &&
+            dropdownItems.map((item) => (
+              <div
+                onClick={() => dropdownItemSelected(item)}
+                className={styles.dropdownItem}
+              >
+                {item}
+              </div>
+            ))}
+        </div>
       </div>
       {hasDropdown && (
         <div className={styles.searchHistoryDropdown}>

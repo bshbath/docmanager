@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "../../molecules/Header/Header";
 import LargeFileImage from "../../atoms/Image/LargeFileImage";
 import LoadFilesText from "../../atoms/Text/LoadFilesText";
@@ -19,7 +19,6 @@ import styles from "./LoadData.module.css";
 const LoadData = () => {
   const {
     loadProgress,
-    startLoad,
     loadResults,
     loading,
     loadError,
@@ -28,15 +27,14 @@ const LoadData = () => {
     selectedProject,
     setSelectedProject,
     loadSelectedProject,
+    getProjectLoadstatus,
   } = useOperations();
 
   const navigate = useNavigate();
-
-  const handleLoad = () => {
-    startLoad();
-  };
+  const pollTimer = useRef();
 
   const loadProject = (projectName) => {
+    startPolling();
     loadSelectedProject(projectName);
   };
 
@@ -51,6 +49,34 @@ const LoadData = () => {
   const onProjectSelect = (selectedProject) => {
     setSelectedProject(selectedProject);
   };
+
+  const startPolling = () => {
+    const timer = setInterval(pollLoadStatus, 5000);
+    pollTimer.current = timer;
+  };
+
+  const stopPolling = () => {
+    clearInterval(pollTimer.current);
+  };
+
+  const pollLoadStatus = async () => {
+    let loadStatus = "";
+    if (selectedProject.name) {
+      loadStatus = await getProjectLoadstatus(selectedProject.name);
+      console.log("SHOULD STOP POLLING ", loadStatus);
+    }
+    if (
+      loadStatus == "Completed" ||
+      loadStatus == "Not Found" ||
+      loadStatus !== "Processing"
+    ) {
+      stopPolling();
+    }
+  };
+
+  useEffect(() => {
+    return () => clearInterval(pollTimer.current);
+  }, []);
 
   return (
     <div className={styles.container}>

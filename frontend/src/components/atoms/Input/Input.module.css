@@ -47,19 +47,44 @@
 
 .dropdownHide {
   position: absolute;
-  height: 200px;
+  height: 0px;
   width: 360px;
-  background-color: red;
+  background-color: #f2f2f2;
   opacity: 0;
+  margin-left: 15px;
+
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
 }
 
 .dropdownShow {
   position: absolute;
-  height: 200px;
+  height: 150px;
   width: 360px;
-  background-color: red;
+  margin-left: 15px;
+  background-color: #f2f2f2;
   opacity: 1;
   transition: opacity 0.2s;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  margin-top: 3px;
+
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+
+.dropdownItem {
+  height: 25px;
+  margin: 4px;
+  margin-left: 20px;
+  align-items: center;
+  display: flex;
+  font-family: "montserrat";
+  font-size: 15px;
+  cursor: pointer;
+  background-color: #eee;
 }
 
 .searchBox {

@@ -1,5 +1,9 @@
 const backendAPIURL = "http://127.0.0.1:8000";
 
+const delay = (delayInms) => {
+  return new Promise((resolve) => setTimeout(resolve, delayInms));
+};
+
 class Operations {
   constructor() {}
 
@@ -43,6 +47,7 @@ class Operations {
   }
 
   async loadProjectStatus(projectName) {
+    console.log("SASDFASDFDAS N ", projectName);
     try {
       const response = await fetch(`${backendAPIURL}/project/status`, {
         method: "POST",
@@ -57,9 +62,9 @@ class Operations {
     }
   }
 
-  async loadSearchStatus(projectName, searchTerm) {
+  async loadSearchStatus({ projectName, searchTerm }) {
     try {
-      const response = await fetch(`${backendAPIURL}/project/status`, {
+      const response = await fetch(`${backendAPIURL}/search/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,12 +80,12 @@ class Operations {
 
   async initiateSearch(searchParams) {
     try {
-      const response = await fetch(`${backendAPIURL}/api/search/start`, {
+      const response = await fetch(`${backendAPIURL}/search/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query: searchParams.query,
-          socketId: "12345",
+          project_name: searchParams.projectName,
+          search_term: searchParams.searchTerm,
         }),
       });
 
@@ -115,13 +120,13 @@ class Operations {
     }
   }
 
-  async loadSelectedProject(selectedProjectName) {
+  async setupSelectedProject(projectName) {
     try {
       const response = await fetch(`${backendAPIURL}/project/setup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          project_name: selectedProjectName,
+          project_name: projectName,
         }),
       });
 
@@ -147,14 +152,33 @@ class Operations {
     }
   }
 
-  async fetchPDFFile(filePath) {
+  async fetchSearchHistoryForProject({ projectName }) {
     try {
-      const response = await fetch(`${backendAPIURL}/api/pdf/load`, {
+      const response = await fetch(`${backendAPIURL}/search/history`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query: filePath,
-          socketId: "12345",
+          project_name: projectName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to start load");
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async fetchPDFFile(filePath) {
+    try {
+      const response = await fetch(`${backendAPIURL}/search/file`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_path: filePath,
         }),
       });
 

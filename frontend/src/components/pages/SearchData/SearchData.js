@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Header from "../../molecules/Header/Header";
 import MediumFileImage from "../../atoms/Image/MediumFileImage";
 import LoadFilesText from "../../atoms/Text/LoadFilesText";
@@ -73,6 +73,7 @@ const SearchData = () => {
     searchResults,
     rootFolderId,
     socketSearchResults,
+    searchOccurences,
     searching,
     searchError,
     loadedFilesCount,
@@ -83,23 +84,67 @@ const SearchData = () => {
     folderFileStructure,
     loadProjectFolderStructure,
     projectStatus,
+    getSearchStatus,
+
+    getSearchHistory,
+    searchHistoryForProjects,
+    resetSearchPage,
   } = useOperations();
-  const [searchTerm, setSearchTerm] = useState("Katzentalbach");
+  const [searchTerm, setSearchTerm] = useState("");
   const [filesForResults, setFilesForResults] = useState([]);
   const [selectedFileBlob, setSelectedFileBlob] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFilePath, setSelectedFilePath] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [highlightedPages, setHighlightedPages] = useState([]);
+  const [searchHistory, setSearchHistory] = useState([]);
 
-  const [showSearchHistory, setShowSearchHistory] = useState(true);
-  // const [folderFileStructure, setFolderFileStructure] = useState({});
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+
+  const pollTimer = useRef();
 
   const handleSearch = () => {
     if (searchTerm) {
-      startSearch({ query: searchTerm });
+      resetSearchPage();
+      setFilesForResults([]);
+
+      startPolling();
+
+      startSearch({
+        searchTerm: searchTerm,
+        projectName: selectedProject.name,
+      });
+      // getSearchStatus({
+      //   projectName: selectedProject.name,
+      //   searchTerm: searchTerm,
+      // });
     }
   };
+
+  const startPolling = () => {
+    const timer = setInterval(pollSearchStatus, 5000);
+    pollTimer.current = timer;
+  };
+
+  const stopPolling = () => {
+    clearInterval(pollTimer.current);
+  };
+
+  const pollSearchStatus = async () => {
+    const searchStatus = await getSearchStatus({
+      projectName: selectedProject.name,
+      searchTerm: searchTerm,
+    });
+    console.log("SHOULD STOP POLLING ", searchStatus);
+    if (searchStatus == "Completed" || searchStatus !== "Searching") {
+      console.log("SHOULD STOP POLLING 111 ", searchStatus);
+      stopPolling();
+    }
+  };
+
+  useEffect(() => {
+    return () => clearInterval(pollTimer.current);
+  }, []);
 
   const openModal = (file, pages) => {
     setSelectedFileBlob(file);
@@ -108,17 +153,18 @@ const SearchData = () => {
 
   useEffect(() => {
     if (loadedPdf) {
-      console.log("LLLOADADFADF ", loadedPdf);
       openModal(loadedPdf, selectFile.pages);
     }
   }, [loadedPdf]);
 
   const fileExplorerItemSelected = (id) => {
     const filesInFolder = folderFileStructure[id];
+    console.log("FILES IN FOLDER ", filesInFolder);
     if (filesInFolder && filesInFolder.length > 0) {
       const filesToDisplay = filesInFolder.map((key) => {
-        const file = socketSearchResults[key];
-        if (file) {
+        const file = searchOccurences[key];
+        console.log("FILE IN FOLDER ", file);
+        if (file && Object.keys(file).length > 0) {
           return {
             fileName: file.fileName,
             occurences: file.pages.length,
@@ -144,9 +190,8 @@ const SearchData = () => {
 
   const searchHistoryItemSelected = (selectedItem) => {
     setSearchTerm(selectedItem);
+    setShowSearchHistory(false);
   };
-
-  console.log("TTADSFADFASDF ", folderFileStructure);
 
   useEffect(() => {
     if (!modalIsOpen) {
@@ -156,15 +201,34 @@ const SearchData = () => {
   }, [modalIsOpen]);
 
   useEffect(() => {
+    resetSearchPage();
+    setFilesForResults([]);
+  }, []);
+
+  useEffect(() => {
+    if (selectedProject.loaded) {
+      getSearchHistory(selectedProject.name);
+    }
+  }, [selectedProject]);
+
+  useEffect(() => {
+    if (selectedProject.name) {
+      if (searchHistoryForProjects[selectedProject.name]) {
+        setSearchHistory(searchHistoryForProjects[selectedProject.name]);
+      }
+    }
+  }, [searchHistoryForProjects]);
+
+  useEffect(() => {
     const fileIds = folderFileStructure[rootFolderId];
     if (!fileIds) {
       return;
     }
-    if ((Object.keys(socketSearchResults).length === 0) == 0) {
+    if ((Object.keys(searchOccurences).length === 0) == 0) {
       return;
     }
     const filesToDisplay = fileIds.map((key) => {
-      const file = socketSearchResults[key];
+      const file = searchOccurences[key];
       if (file) {
         return {
           fileName: file.fileName,
@@ -173,11 +237,10 @@ const SearchData = () => {
           fullPath: file.fullPath,
         };
       } else {
-        console.log("MISSING FILE INFO");
         return {};
       }
     });
-
+    console.log("MISSING FILE INFO ", filesToDisplay);
     setFilesForResults(filesToDisplay);
   }, [rootFolderId]);
 
@@ -203,11 +266,11 @@ const SearchData = () => {
       <div className={styles.body}>
         <div className={styles.projectListAndSearchInput}>
           <div className={styles.projectSelector}>
-            <ProjectsList
+            {/* <ProjectsList
               projects={allProjects.filter((proj) => proj.loaded)}
               selectedProject={selectedProject.name}
               onProjectSelect={setSelectedProject}
-            />
+            /> */}
           </div>
           <div className={styles.searchAndIcon}>
             <div className={styles.fileIcon}>
@@ -230,13 +293,12 @@ const SearchData = () => {
                   wrapperClass=""
                 />
               )}
-
               <Input
                 variant="searchBox"
                 value={searchTerm}
                 onChange={setSearchTerm}
-                hasDropdown={true}
-                dropdownItems={[]}
+                hasDropdown={searchHistory.length > 0}
+                dropdownItems={searchHistory}
                 dropdownItemSelected={searchHistoryItemSelected}
                 dismissDrowdown={() => setShowSearchHistory(false)}
                 toggleDropdown={() => setShowSearchHistory(!showSearchHistory)}

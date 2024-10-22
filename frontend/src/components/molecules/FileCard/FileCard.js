@@ -8,6 +8,7 @@ import "react-tippy/dist/tippy.css";
 import { Tooltip } from "react-tippy";
 
 const FileCard = ({ onClick, file }) => {
+  console.log("FFADFADFASDF ", file);
   const { fileName, occurences } = file;
   return (
     <div onClick={() => onClick(file)} className={`${styles.container}`}>

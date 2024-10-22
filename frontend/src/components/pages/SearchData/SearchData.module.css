@@ -36,7 +36,6 @@
   height: calc(100vh - 255px);
   width: 100%;
   gap: 20px;
-  background-color: green;
 }
 
 .explorer {

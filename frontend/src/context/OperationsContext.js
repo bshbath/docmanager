@@ -189,6 +189,9 @@ export const OperationsProvider = ({ children }) => {
           loaded: true,
         });
       }
+      if (status == "Processing") {
+        setLoadProgress(loadStatus.file_count);
+      }
       if (
         status == "Completed" ||
         status == "Not Found" ||
@@ -216,11 +219,8 @@ export const OperationsProvider = ({ children }) => {
         setSearching(false);
         let searchFolderStructure = searchStatus.folder_structure;
         let folderFilesStructure = searchStatus.folder_file_structure;
-        console.log(
-          "STATAFADSFASDFADSFasdf 2222 ",
-          searchStatus.folder_file_structure
-        );
-        // setSelectedProjectFolderFilesStructure(folderFilesStructure);
+        console.log("STATAFADSFASDFADSFasdf 2222 ", searchStatus);
+        setSelectedProjectFolderFilesStructure(folderFilesStructure);
         console.log("STATAFADSFASDFADSFasdf 333 ", searchFolderStructure);
         let occurences = searchStatus.occurences;
         setSelectedProjectFolderStructure(searchFolderStructure);
@@ -327,7 +327,7 @@ export const OperationsProvider = ({ children }) => {
         loadedFilesCount,
 
         selectedProjectFolderStructure,
-        folderFileStructure: selectedProjectFolderFilesStructure,
+        selectedProjectFolderFilesStructure,
 
         allProjects,
         selectedProject,

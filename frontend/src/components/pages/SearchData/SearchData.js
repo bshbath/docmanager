@@ -81,7 +81,7 @@ const SearchData = () => {
     allProjects,
     selectedProject,
     setSelectedProject,
-    folderFileStructure,
+    selectedProjectFolderFilesStructure: folderFileStructure,
     loadProjectFolderStructure,
     projectStatus,
     getSearchStatus,

@@ -46,7 +46,7 @@ class ProjectSearch():
                     "status": "Completed",
                     "folder_structure": project_search_history[search_term],
                     "occurences": self.load_search_page_occurences(project_name, search_term),
-                    # "folder_file_structure": self.load_file_folder_structure(project_name, search_term)
+                    "folder_file_structure": self.load_folder_file_structure(project_name, search_term)
                 }
         print("HHHERERERE  22 why ", search_term, project_search_history[search_term])
         return {
@@ -190,7 +190,7 @@ class ProjectSearch():
         with open(folder_file_structure, 'w') as f:
             json.dump(file_folder_structure, f, indent=2)
 
-    def load_file_folder_structure(self, project_name, search_term):
+    def load_folder_file_structure(self, project_name, search_term):
         projects_directory = self.projects_folder
         processed_project_directory = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, "SEARCH-HISTORY", search_term)
 

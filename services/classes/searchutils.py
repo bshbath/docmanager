@@ -123,7 +123,7 @@ class SearchUtilsClass():
         structure = {
             "name": project_name if project_name else name,
             "id": project_name if project_name else name,
-            "active": False,
+            "active": True if project_name else False,
             "toggled": True if project_name else False
         }
         

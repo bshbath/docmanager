@@ -140,10 +140,9 @@ export const OperationsProvider = ({ children }) => {
       setLoadError("Failed to get project folder structure");
     }
   };
-
-  const fetchPDF = async (filePath) => {
+  const fetchPDF = async (fileProps) => {
     try {
-      const pdfFile = await fetchPDFFile(filePath);
+      const pdfFile = await fetchPDFFile(fileProps);
       setLoadedPdf(pdfFile);
     } catch (err) {
       console.log("ERror fetching PDF");
@@ -164,7 +163,9 @@ export const OperationsProvider = ({ children }) => {
         setLoadError("Failed to load all projects");
       }
     };
-    getProjectstatus(selectedProject.name);
+    if (selectedProject.name) {
+      getProjectstatus(selectedProject.name);
+    }
   }, [selectedProject]);
 
   const getProjectLoadstatus = async (projectName) => {

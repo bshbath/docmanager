@@ -67,11 +67,11 @@ const Button = ({
 };
 
 Button.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
   onClick: PropTypes.func.isRequired,
   variant: PropTypes.oneOf(["primary", "secondary", "danger", "success"]),
   color: PropTypes.string,
-  size: PropTypes.oneOf(["small", "medium", "large"]),
+  size: PropTypes.oneOf(["small", "medium", "large", "xsmall"]),
   round: PropTypes.bool,
   close: PropTypes.bool,
   disabled: PropTypes.bool,

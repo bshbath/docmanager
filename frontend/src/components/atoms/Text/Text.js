@@ -25,6 +25,8 @@ Text.propTypes = {
     "fileName",
     "searchFilesText",
     "loadedFilesCount",
+    "loadFilesText",
+    "loadFilesSubText",
   ]),
   bold: PropTypes.bool,
 };

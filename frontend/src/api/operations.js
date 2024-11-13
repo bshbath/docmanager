@@ -1,4 +1,4 @@
-const backendAPIURL = "http://127.0.0.1:8000";
+const backendAPIURL = "http://127.0.0.1:8001";
 
 const delay = (delayInms) => {
   return new Promise((resolve) => setTimeout(resolve, delayInms));
@@ -47,7 +47,9 @@ class Operations {
   }
 
   async loadProjectStatus(projectName) {
-    console.log("SASDFASDFDAS N ", projectName);
+    if (!projectName) {
+      return;
+    }
     try {
       const response = await fetch(`${backendAPIURL}/project/status`, {
         method: "POST",
@@ -172,13 +174,16 @@ class Operations {
     }
   }
 
-  async fetchPDFFile(filePath) {
+  async fetchPDFFile({ fullPath, pages, searchTerm }) {
+    console.log("AAABBB :", fullPath, pages, searchTerm);
     try {
       const response = await fetch(`${backendAPIURL}/search/file`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          file_path: filePath,
+          file_path: fullPath,
+          pages,
+          search_term: searchTerm,
         }),
       });
 

@@ -1,0 +1,19 @@
+.select_container {
+  width: 250px;
+}
+
+.custom_select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  appearance: none; /* Remove default arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,..."); /* Custom arrow icon */
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}

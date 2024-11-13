@@ -34,7 +34,6 @@ class ProjectProcessor():
 
                 os.makedirs(processed_project_directory, exist_ok=True)
                 folder_file_structure = self.build_folder_file_structure(processed_project_directory, project_name)
-                print("'''mMMMMMM ", )
                 self.folder_file_structure_for_projects[project_name] = folder_file_structure
             else:
                 folder_file_structure = self.folder_file_structure_for_projects[project_name]
@@ -93,10 +92,9 @@ class ProjectProcessor():
 
         return search_history
     
-
     def make_processed_files_folder_for_project(self, project_name):
         projects_directory = self.projects_folder
-        processed_files_folder = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, "ALL-PDFS")
+        processed_files_folder = os.path.join(projects_directory, project_name)
         os.makedirs(processed_files_folder, exist_ok=True)
         return processed_files_folder
     
@@ -142,7 +140,7 @@ class ProjectProcessor():
                     file_count += pdf_files_count
                 elif file_name.lower().endswith('.pdf'):
                     file_count += 1
-                    shutil.copy2(file_path, dest_path)
+                    # shutil.copy2(file_path, dest_path)
                 else:
                     print(f"Skipping non-PDF file: {file_name}")
                 self.processing_status[project_name] = {
@@ -150,7 +148,7 @@ class ProjectProcessor():
                     "file_count": file_count
                 }
 
-        print("SSTT: ", project_name, self.processing_status, self.processing_status[project_name])
+        print("SST: ", project_name, self.processing_status, self.processing_status[project_name])
         self.processing_status[project_name]["status"] = "Completed"
         self.processing_status[project_name]["file_count"] = file_count
         self.update_projects_load_history(project_name, file_count)
@@ -166,7 +164,7 @@ class ProjectProcessor():
     def return_folder_structure_for_clientside_file_explorer(self, project_name):
         projects_directory = self.projects_folder
         projects_directory = self.projects_folder
-        processed_project_directory = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, "ALL-PDFS")
+        processed_project_directory = os.path.join(projects_directory, project_name)
 
         os.makedirs(processed_project_directory, exist_ok=True)
         folder_structure_data = build_folder_structure(processed_project_directory, project_name)
@@ -175,7 +173,7 @@ class ProjectProcessor():
             
     def save_folder_structure(self, project_name):
         projects_directory = self.projects_folder
-        processed_project_directory = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, "ALL-PDFS")
+        processed_project_directory = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name)
 
         os.makedirs(processed_project_directory, exist_ok=True)
         folder_structure_file = os.path.join(processed_project_directory, "FolderStructure.json")

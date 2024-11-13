@@ -9,7 +9,6 @@ import SearchData from "./components/pages/SearchData/SearchData";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import FileExplorer from "./components/organisms/FileExplorer/FileExplorer";
 import Input from "./components/atoms/Input/Input";
-import { SocketProvider } from "./context/SocketContext";
 import { OperationsProvider } from "./context/OperationsContext";
 import { createTheme, MantineProvider } from "@mantine/core";
 
@@ -39,19 +38,6 @@ const App = () => {
   const [highlightedPages, setHighlightedPages] = useState([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    const fetchKeywords = async () => {
-      try {
-        const response = await axios.get("/results/keywords.json");
-        setKeywords(response.data.keywords);
-      } catch (error) {
-        console.error("Error fetching keywords:", error);
-      }
-    };
-
-    fetchKeywords();
-  }, []);
 
   const handleMouseEnter = (event, filePath) => {
     const tooltipX = event.clientX;
@@ -164,14 +150,12 @@ const App = () => {
   return (
     <Router>
       <MantineProvider>
-        <SocketProvider>
-          <OperationsProvider>
-            <Routes>
-              <Route path="/" element={<LoadData />} />
-              <Route path="/search" element={<SearchData />} />
-            </Routes>
-          </OperationsProvider>
-        </SocketProvider>
+        <OperationsProvider>
+          <Routes>
+            <Route path="/" element={<LoadData />} />
+            <Route path="/search" element={<SearchData />} />
+          </Routes>
+        </OperationsProvider>
       </MantineProvider>
     </Router>
   );

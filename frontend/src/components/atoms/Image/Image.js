@@ -31,6 +31,7 @@ Image.propTypes = {
     "xlarge",
     "docCard",
     "bgImage",
+    "logoImage",
   ]), // Different image sizes
   rounded: PropTypes.bool,
   lazy: PropTypes.bool,

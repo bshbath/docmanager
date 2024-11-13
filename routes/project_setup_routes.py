@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from services.project_load_service import load_projects
 from services.classes.ProjectProcessor import ProjectProcessor
 from pydantic import BaseModel
@@ -17,12 +17,14 @@ async def load_all_projects():
     return projects
 
 @router.post('/setup')
-async def load_all_projects(request: SetupRequest):
+async def load_all_projects(request: SetupRequest, background_tasks: BackgroundTasks):
     project_name = request.project_name
-    project_found = await processor.pre_process_project_for_search(project_name)
+    # project_found = await processor.pre_process_project_for_search(project_name)
     
+    background_tasks.add_task(processor.pre_process_project_for_search, project_name)
+
     return {
-        "status": "Setup Initiated..." if project_found else "Project not found"
+        "status": "Loading..."
     }
 
 @router.post('/folderstructure')

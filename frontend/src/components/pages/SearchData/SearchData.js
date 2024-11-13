@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Header from "../../molecules/Header/Header";
 import MediumFileImage from "../../atoms/Image/MediumFileImage";
+import CustomSelect from "../../atoms/Select/Select";
 import LoadFilesText from "../../atoms/Text/LoadFilesText";
 import CopyFilesText from "../../atoms/Text/CopyFilesText";
 import LoadProgressText from "../../atoms/Text/LoadProgressText";
@@ -121,8 +122,35 @@ const SearchData = () => {
     }
   };
 
+  const projectStages = [
+    {
+      name: "Offer Processing Phase",
+      key: "Offer Processing Phase",
+    },
+
+    {
+      name: "Conclusion of Contract",
+      key: "Conclusion of Contract",
+    },
+    {
+      name: "Construction Implementation",
+      key: "Construction Implementation",
+    },
+    {
+      name: "Building Acceptance",
+      key: "Building Acceptance",
+    },
+    {
+      name: "Construction Accounting",
+      key: "Construction Accounting",
+    },
+    {
+      name: "Guarantee Phase",
+      key: "Guarantee Phase",
+    },
+  ];
   const startPolling = () => {
-    const timer = setInterval(pollSearchStatus, 5000);
+    const timer = setInterval(pollSearchStatus, 1000);
     pollTimer.current = timer;
   };
 
@@ -180,11 +208,11 @@ const SearchData = () => {
       setFilesForResults(filesToDisplay);
     }
   };
-
   const selectFile = (props) => {
     setSelectedFile(props);
     if (props && props.fullPath) {
-      fetchPDF(props.fullPath);
+      console.log("PPPPPP ", props);
+      fetchPDF({ ...props, searchTerm });
     }
   };
 
@@ -293,6 +321,7 @@ const SearchData = () => {
                   wrapperClass=""
                 />
               )}
+              <CustomSelect options={projectStages} />
               <Input
                 variant="searchBox"
                 value={searchTerm}

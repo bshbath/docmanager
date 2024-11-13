@@ -51,7 +51,7 @@ const LoadData = () => {
   };
 
   const startPolling = () => {
-    const timer = setInterval(pollLoadStatus, 5000);
+    const timer = setInterval(pollLoadStatus, 1000);
     pollTimer.current = timer;
   };
 

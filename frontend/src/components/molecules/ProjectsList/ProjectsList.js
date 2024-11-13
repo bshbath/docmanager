@@ -12,7 +12,7 @@ const ProjectsList = ({
     <div className={styles.container}>
       {projects.map((project) => {
         return (
-          <div className={styles.projectAndCheck}>
+          <div key={project.name} className={styles.projectAndCheck}>
             <div className={styles.check}>{project.loaded ? "✔" : ""}</div>
             <div
               className={

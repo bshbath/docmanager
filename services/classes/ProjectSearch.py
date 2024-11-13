@@ -21,10 +21,13 @@ class ProjectSearch():
             project_search_history = self.load_search_history_for_project(project_name)
             self.search_history[project_name] = project_search_history
 
+
+    async def highlight_and_return(self, pdf_path, pages_with_occurrences, search_term):
+        return await utilsClass.highlight_and_return(pdf_path, pages_with_occurrences, search_term)
+    
     def get_search_history(self, project_name):
         search_history = self.load_search_history_for_project(project_name)
         return list(search_history.keys())
-
     
     def get_search_status(self, project_name, search_term):
         if project_name in self.searching:
@@ -90,6 +93,7 @@ class ProjectSearch():
                     "folder_structure": project_search_history[search_term]
                 }
             
+        
         if project_name in self.searching:
             self.searching[project_name][search_term] = True
         else:
@@ -97,7 +101,7 @@ class ProjectSearch():
             self.searching[project_name][search_term] = True
 
         projects_directory = self.projects_folder
-        processed_files_folder = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, "ALL-PDFS")
+        processed_files_folder = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name)
         os.makedirs(processed_files_folder, exist_ok=True)
         project_folder_structure, folder_file_structure, search_file_occurences = await utilsClass.list_files_in_directory_with_keyword_search(projects_directory, processed_files_folder, search_term, project_name)
         

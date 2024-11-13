@@ -4,7 +4,7 @@ import Button from "./Button";
 const ChevronRoundButton = (props) => {
   return (
     <div>
-      <Button round={true} {...props} />
+      <Button onClick={props.onClick} round={true} {...props} />
     </div>
   );
 };

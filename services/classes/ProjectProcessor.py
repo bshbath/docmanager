@@ -213,7 +213,6 @@ class ProjectProcessor():
             return current_id
         
         traverse(path, True)
-        print('SSSTTRT ', structure)
         return structure
     
 

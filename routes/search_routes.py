@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.exceptions import HTTPException
 import os
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 from services.classes.ProjectSearch import ProjectSearch
 
@@ -13,6 +13,8 @@ projects_folder = "../../"
 class SearchRequest(BaseModel):
     project_name: str
     search_term: str
+    project_phase: Optional[str] = None
+
 
 class SearchHistoryRequest(BaseModel):
     project_name: str
@@ -27,8 +29,9 @@ searcher = ProjectSearch(projects_folder)
 async def search_project(request: SearchRequest, background_tasks: BackgroundTasks):
     project_name = request.project_name
     search_term = request.search_term
+    project_phase = request.project_phase
 
-    background_tasks.add_task(searcher.search_for_term_in_project, project_name, search_term)
+    background_tasks.add_task(searcher.search_for_term_in_project, project_name, search_term, project_phase)
 
     return {
         "status": "Searching"

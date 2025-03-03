@@ -15,53 +15,168 @@ import { Loader } from "@mantine/core";
 import { RotatingLines } from "react-loader-spinner";
 import PDFModal from "../PDFModal/PDFModal";
 import ProjectsList from "../../molecules/ProjectsList/ProjectsList";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import MarkdownIt from "markdown-it";
+import showdown from "showdown";
+import {
+  faMaximize,
+  faMinimize,
+  faFilePdf,
+  faFileText,
+} from "@fortawesome/free-solid-svg-icons";
+import MarkdownEditor from "@uiw/react-markdown-editor";
 
 import { useOperations } from "../../../context/OperationsContext";
 
 import Button from "../../atoms/Button/Button";
 import styles from "./SearchData.module.css";
+import Markdown from "react-markdown";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const data = {
-  name: "root",
-  toggled: true,
-  active: false,
-  id: 9,
-  children: [
-    {
-      name: "parent",
-      id: 19,
-      active: true,
-      children: [
-        { name: "child1", id: 10 },
-        { name: "child2", id: 11 },
-      ],
-    },
-    {
-      name: "parent",
-      id: 12,
-      children: [
-        {
-          name: "nested parent",
-          id: 13,
-          children: [
-            { name: "nested child 1", id: 14 },
-            { name: "nested child 2", id: 15 },
-          ],
-        },
-      ],
-    },
-    {
-      name: "loading",
-      id: 199,
-    },
-  ],
-};
+const DocumentPreview = ({ setDocumentContent, documentContent }) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-const file = {
-  id: "someid",
-  occurences: 15,
-  fileName:
-    "File Name File Name File Name File Name File Name File Name FileName",
+  const downloadMarkdown = () => {
+    const blob = new Blob([documentContent], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "document.md";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Function to download as PDF
+  const downloadPDF = () => {
+    // generatePdfFromMarkdown(documentContent);
+    const converter = new showdown.Converter();
+    const html = converter.makeHtml(documentContent);
+    const styledHtml = `
+      <div style="width: 600px; margin: auto; font-size: 20px; font-family: Arial, sans-serif;">
+        ${html}
+      </div>
+    `;
+
+    console.log("HHHHHHTTTTMMMLLL ", styledHtml);
+    const doc = new jsPDF({
+      orientation: "portrait",
+      format: "a4",
+    });
+    doc.html(styledHtml, {
+      callback: function (doc) {
+        doc.save("document.pdf");
+      },
+      x: 10,
+      y: 10,
+    });
+  };
+
+  const generatePdfFromMarkdown = async (markdown) => {
+    // Initialize MarkdownIt
+    const md = new MarkdownIt();
+
+    // Convert Markdown to HTML
+    const htmlContent = md.render(markdown);
+
+    // Create a hidden container to render the HTML
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.top = "-9999px";
+    container.style.width = "210mm"; // Set width to A4 dimensions for PDF
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
+
+    try {
+      // Use html2canvas to capture the rendered content
+      const canvas = await html2canvas(container, {
+        scale: 2, // Increase resolution
+        useCORS: true, // Enable CORS for external images
+      });
+
+      // Get the image data from the canvas
+      const imgData = canvas.toDataURL("image/png");
+
+      // Create a PDF using jsPDF
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Calculate image width and height to fit in the PDF
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add the image to the PDF, splitting across pages if needed
+      while (heightLeft > 0) {
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        position -= pageHeight;
+        if (heightLeft > 0) pdf.addPage();
+      }
+
+      // Save the PDF
+      pdf.save("document.pdf");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      // Clean up the container
+      document.body.removeChild(container);
+    }
+  };
+
+  return (
+    <div
+      className={`${styles.screenshotPreview} ${
+        isOpen ? styles.screenshotPreviewOpen : styles.screenshotPreviewClosed
+      }`}
+    >
+      <div className={styles.previewButtons}>
+        <div onClick={() => setIsOpen(!isOpen)}>
+          <FontAwesomeIcon
+            className={styles.previewButtonMinMax}
+            icon={isOpen ? faMinimize : faMaximize}
+          />
+        </div>
+        {documentContent && (
+          <>
+            <div onClick={() => downloadPDF()}>
+              <FontAwesomeIcon
+                className={styles.previewButtonMinMax}
+                color="#F40F02"
+                icon={faFilePdf}
+              />
+            </div>
+            {/* <div onClick={() => downloadMarkdown()}>
+              <FontAwesomeIcon
+                color="grey"
+                className={styles.previewButtonMinMax}
+                icon={faFileText}
+              />
+            </div> */}
+          </>
+        )}
+      </div>
+      {isOpen && (
+        <div className={styles.markdownContent}>
+          <MarkdownEditor
+            value={documentContent}
+            height="100vh"
+            onChange={(value, viewUpdate) => {
+              // console.log("VVVVV: ", value);
+              setDocumentContent(value);
+            }}
+          />
+          {/* <Markdown urlTransform={(value) => value}>{documentContent}</Markdown> */}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const SearchData = () => {
@@ -99,7 +214,8 @@ const SearchData = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [highlightedPages, setHighlightedPages] = useState([]);
   const [searchHistory, setSearchHistory] = useState([]);
-
+  const [documentContent, setDocumentContent] = useState("");
+  const [screenshots, setScreenshots] = useState([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
 
   const pollTimer = useRef();
@@ -115,40 +231,37 @@ const SearchData = () => {
         searchTerm: searchTerm,
         projectName: selectedProject.name,
       });
-      // getSearchStatus({
-      //   projectName: selectedProject.name,
-      //   searchTerm: searchTerm,
-      // });
     }
   };
 
   const projectStages = [
     {
       name: "Offer Processing Phase",
-      key: "Offer Processing Phase",
+      key: "offer_processing",
     },
 
     {
       name: "Conclusion of Contract",
-      key: "Conclusion of Contract",
+      key: "contract_conclusion",
     },
     {
       name: "Construction Implementation",
-      key: "Construction Implementation",
+      key: "construction_implementation",
     },
     {
       name: "Building Acceptance",
-      key: "Building Acceptance",
+      key: "building_acceptance",
     },
     {
       name: "Construction Accounting",
-      key: "Construction Accounting",
+      key: "construction_accounting",
     },
     {
       name: "Guarantee Phase",
-      key: "Guarantee Phase",
+      key: "guarantee_phase",
     },
   ];
+
   const startPolling = () => {
     const timer = setInterval(pollSearchStatus, 1000);
     pollTimer.current = timer;
@@ -180,7 +293,7 @@ const SearchData = () => {
   };
 
   useEffect(() => {
-    if (loadedPdf) {
+    if (loadedPdf && selectFile) {
       openModal(loadedPdf, selectFile.pages);
     }
   }, [loadedPdf]);
@@ -281,6 +394,10 @@ const SearchData = () => {
       <div className={styles.header}>
         <Header />
       </div>
+      <DocumentPreview
+        setDocumentContent={setDocumentContent}
+        documentContent={documentContent}
+      />
       {selectedFileBlob && (
         <PDFModal
           pages={highlightedPages}
@@ -289,6 +406,9 @@ const SearchData = () => {
           selectedFile={selectedFile}
           modalIsOpen={modalIsOpen}
           setModalIsOpen={setModalIsOpen}
+          setDocumentContent={setDocumentContent}
+          screenshots={screenshots}
+          setScreenshots={setScreenshots}
         />
       )}
       <div className={styles.body}>

@@ -69,7 +69,16 @@ const Button = ({
 Button.propTypes = {
   children: PropTypes.node,
   onClick: PropTypes.func.isRequired,
-  variant: PropTypes.oneOf(["primary", "secondary", "danger", "success"]),
+  variant: PropTypes.oneOf([
+    "primary",
+    "secondary",
+    "danger",
+    "success",
+    "modalPrevNextButton",
+    "modalPrevNextButton",
+    "selectedPageNumberButton",
+    "pageNumberButton",
+  ]),
   color: PropTypes.string,
   size: PropTypes.oneOf(["small", "medium", "large", "xsmall"]),
   round: PropTypes.bool,

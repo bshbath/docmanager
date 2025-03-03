@@ -23,6 +23,22 @@ class SearchUtilsClass():
         'ß': 'ss'
     }
 
+    all_phases = ["0010", "0012", "0013", "0014", "0020", 
+                  "0025", "0026", "0027", "0028", "0030",
+                  "0033", "0034", "0035", "0040", "0041",
+                  "0042", "0045", "0046", "0050", "0055",
+                  "0060", "0062", "0070", "0072", "0080",
+                  "0090", "0090", "0095", "0096"]
+
+    project_phases = {
+        "offer_processing": ["0010", "0020"],
+        "contract_conclusion": ["0010", "0012", "0013", "0014", "0020", "0025", "0026", "0027", "0028", "0030"],
+        "construction_implementation": all_phases,
+        "building_acceptance": all_phases,
+        "construction_accounting": all_phases,
+        "guarantee_phase": all_phases
+    }
+
     folder_filter_json = {}
 
     def __init__(self):
@@ -143,7 +159,6 @@ class SearchUtilsClass():
             return current_id
         
         traverse(path, True)
-        print('SSSTTRT ', structure)
         return structure
     
     def build_folder_structure(self, path, project_name=""):
@@ -271,7 +286,8 @@ class SearchUtilsClass():
 
         pass
 
-    async def list_files_in_directory_with_keyword_search(self, projects_folder, directory, search_term, project_name):
+    async def list_files_in_directory_with_keyword_search(self, projects_folder, directory, search_term, project_name, project_phase):
+        project_phase = "offer_processing"
         projects_directory = projects_folder
 
         search_history_directory = self.replace_german_characters(os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name, 'SEARCH-HISTORY', search_term))
@@ -320,10 +336,8 @@ class SearchUtilsClass():
                     relative_path = os.path.relpath(file_path, directory)
                     output_subdir = os.path.join(directory, self.replace_german_characters(os.path.dirname(relative_path), 'replaced_german_chars.txt'))
                     
-                    print("FFFFADSFADF ", output_subdir)
                     os.makedirs(output_subdir, exist_ok=True)
                     highlighted_pdf_path = self.highlight_text_in_pdf(file_path, search_term, pages_with_occurrences, output_subdir, error_log_path)
-                    print("FFFFADSFADF 222 ", highlighted_pdf_path)
                     file_name = os.path.basename(highlighted_pdf_path)
                     occurences_json = {
                         "pages": pages_with_occurrences,
@@ -384,21 +398,34 @@ class SearchUtilsClass():
         file_count = 0
         ##
         directory_to_search = os.path.join(projects_directory, project_name)
+        
+        folders_to_search = self.all_phases.get(project_phase)
+        folders_to_search = folders_to_search or self.all_phases
+            
         for root, dirs, files in os.walk(directory_to_search):
-            for file in files:
-                file_count += 1
+            root_name = os.path.basename(root)
+            if root_name == project_name:
+                dirs[:] = [d for d in dirs if any(phrase in d for phrase in folders_to_search)]
+            else:
+                print("ROOTTT: ", root)
+                print("FOLDER NAME: ", os.path.basename(root))
+                print("DIRS: ", dirs)
+                print("FILES: ", files)
+                print("===============================")
+                for file in files:
+                    file_count += 1
 
-                self.search_history_status[project_name][search_term] = {
-                    "status": "Searching",
-                    "file_count": file_count
-                }
+                    self.search_history_status[project_name][search_term] = {
+                        "status": "Searching",
+                        "file_count": file_count
+                    }
 
-                file_path = os.path.join(root, file)
-                if file.lower().endswith('.pdf'):
-                    occurences_json_for_file = search_in_pdf(file_path, search_term)
-                    file_name = os.path.basename(file_path)
-                    
-                    occurences_json[file_name] = occurences_json_for_file
+                    file_path = os.path.join(root, file)
+                    if file.lower().endswith('.pdf'):
+                        occurences_json_for_file = search_in_pdf(file_path, search_term)
+                        file_name = os.path.basename(file_path)
+                        
+                        occurences_json[file_name] = occurences_json_for_file
 
 
         self.search_history_status[project_name][search_term] = {

@@ -1,7 +1,8 @@
 .container {
   background-color: #f2f2f2;
   border-radius: 16px;
-  height: 120px;
+  min-height: 250px;
+  max-height: 80%;
   width: 253px;
   overflow-y: scroll;
   display: flex;

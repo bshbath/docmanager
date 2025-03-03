@@ -39,19 +39,15 @@ class ProjectSearch():
                         "file_count": "",
                     }
                 
-        print("HHHERERERE ", project_name in self.search_history)
         if project_name in self.search_history:
             project_search_history = self.search_history[project_name]
-            print("HHHERERERE  22 ", search_term, project_search_history[search_term])
             if search_term in project_search_history:
-                print("HHHERERERE  33 ", search_term, project_search_history[search_term])
                 return {
                     "status": "Completed",
                     "folder_structure": project_search_history[search_term],
                     "occurences": self.load_search_page_occurences(project_name, search_term),
                     "folder_file_structure": self.load_folder_file_structure(project_name, search_term)
                 }
-        print("HHHERERERE  22 why ", search_term, project_search_history[search_term])
         return {
             "status": "Not found",
             "file_count": 0,
@@ -60,7 +56,7 @@ class ProjectSearch():
         }
         
 
-    async def search_for_term_in_project(self, project_name, search_term):
+    async def search_for_term_in_project(self, project_name, search_term, project_phase):
         if project_name in self.searching:
             if search_term in self.searching[project_name]:
                 still_searching = self.searching[project_name][search_term]
@@ -103,7 +99,7 @@ class ProjectSearch():
         projects_directory = self.projects_folder
         processed_files_folder = os.path.join(projects_directory, 'PROCESSOR', 'PROCESSED', project_name)
         os.makedirs(processed_files_folder, exist_ok=True)
-        project_folder_structure, folder_file_structure, search_file_occurences = await utilsClass.list_files_in_directory_with_keyword_search(projects_directory, processed_files_folder, search_term, project_name)
+        project_folder_structure, folder_file_structure, search_file_occurences = await utilsClass.list_files_in_directory_with_keyword_search(projects_directory, processed_files_folder, search_term, project_name, project_phase)
         
         self.folder_file_structure_for_projects[project_name] = folder_file_structure
 
@@ -113,9 +109,9 @@ class ProjectSearch():
         self.save_folder_file_structure(project_name, search_term, folder_file_structure)
         self.save_search_page_occurences(project_name, search_term, search_file_occurences)
 
-        print("FFF: ", project_folder_structure)
-        print("GGG: ", folder_file_structure)
-        print("KKK: ", search_file_occurences)
+        # print("FFF: ", project_folder_structure)
+        # print("GGG: ", folder_file_structure)
+        # print("KKK: ", search_file_occurences)
 
         self.searching[project_name][search_term] = False
         # return {
